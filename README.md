@@ -2,6 +2,8 @@
 
 李一鸣
 
+1160300625
+
 2018 年 9 月 28 日
 
 ## 随机数和随机序列的产生
@@ -23,7 +25,7 @@ $$
 \tag{1}
 $$
 
-假定生成的数据中有 $m$ 个在圆内，$n$ 个在圆外。则：
+假定总共生成了 $n$ 个数据，其中有 $m$ 个在圆内，则：
 
 $$
 f_{circle} = \frac{m}{n}
@@ -37,7 +39,7 @@ X_i^2 + Y_i^2 \le (\frac{a}{2})^2 = \frac{a^2}{4}
 \tag{3}
 $$
 
-则其在圆内，计入 $m$ 中，否则计入 $n$ 中。
+则其在圆内，计入 $m$ 中。
 
 以频率估计概率，我们有：
 
@@ -48,7 +50,7 @@ $$
 
 **实验结果：**
 
-在实验中取 $a = 1$（其实多少都没有关系，精确度只与样本数相关），取 $n = 1\ 000, 10\ 000, 100\ 000, 1\ 000\ 000$ 分别进行实验。
+在实验中取 $a = 1$（其实 $a$ 取多少都没有关系，精确度只与样本数相关），取 $n = 1\ 000, 10\ 000, 100\ 000, 1\ 000\ 000$ 分别进行实验。
 
 <object width="100%" height="100px" data="./generate_results/monte-carlo-1000.txt"></object>
 
@@ -64,7 +66,7 @@ $$
 
 生成均值为 $\mu = 10$、方差为 $\sigma = 5$ 的正态分布，并画出均值和方差随样本数增加而变化的图。
 
-设总样本数为 $N$，记前 $n$ 个样本数据的均值、方差分别为 $E_n$ 和 $D_n$，则得到均值、方差矩阵：
+设样本为 $\mathrm{\mathbf{X}}$，总样本数为 $N$，记前 $n$ 个样本数据的均值、方差分别为 $E_n$ 和 $D_n$，则得到均值、方差矩阵：
 
 $$
 \mathrm{\mathbf{E}} = (E_1, E_2, ..., E_N) \\
@@ -80,6 +82,55 @@ $$
 $$
 
 我们只需要作出 $(\mathrm{\mathbf{N}}, \mathrm{\mathbf{E}})$ 和 $(\mathrm{\mathbf{N}}, \mathrm{\mathbf{D}})$ 的图像即可。
+
+**注意事项：**
+
+本来我们可以直接根据 $\mathrm{\mathbf{X}}$ 中的前 $n$ 项直接计算 $E_n$ 和 $D_n$，但在实际问题中数据量往往过大，我们一般不会保存之前的数据，因此我们通常采用递推的计算方式。
+
+1. 均值递推公式
+
+    $$
+    \begin{cases}
+        E_{n - 1} = \frac{1}{n - 1}(X_1 + X_2 + ... + X_{n-1}) \\ \\
+        E_{n} = \frac{1}{n}(X_1 + X_2 + ... + X_{n - 1} + X_{n}) \\
+    \end{cases}
+    $$
+
+    解得：
+
+    $$
+    \begin{aligned}
+        E_n &= \frac{(n - 1)E_{n - 1} + X_n}{n} \\
+            &= \frac{nE_{n - 1} - E_{n - 1} + X_n}{n} \\ 
+            &= E_{n - 1} + \frac{X_n - E_{n - 1}}{n}
+        \tag{ps.1}
+    \end{aligned}
+    $$
+
+2. 方差递推公式
+
+    $$
+    \begin{cases}
+        D_{n - 1} = \frac{1}{n - 1}\sum_{i = 1}^{n - 1}(X_i - E_{n - 1})^2 \\ \\
+        D_{n} = \frac{1}{n}\sum_{i = 1}^{n}(X_i - E_{n})^2 \\
+    \end{cases}
+    $$
+
+    联立式 (ps.1)，得：
+
+    $$
+        \begin{aligned}
+            D_{n} &= \frac{1}{n}\sum_{i = 1}^n(X_i - E_{n - 1} - \frac{X_n - E_{n - 1}}{n})^2 \\ 
+            &= \frac{1}{n}\sum_{i = 1}^n[(X_i - E_{n - 1})^2 + (\frac{X_n - E_{n - 1}}{n})^2 - 2(X_i - E_{n - 1})(\frac{X_n - E_{n - 1}}{n})] \\
+            &= (\frac{X_n - E_{n - 1}}{n})^2 + \frac{1}{n}\sum_{i = 1}^n[(X_i - E_{n - 1})^2 - 2(X_i - E_{n - 1})(\frac{X_n - E_{n - 1}}{n})] \\
+            &= (\frac{X_n - E_{n - 1}}{n})^2 + \frac{1}{n}[(X_n - E_{n - 1})^2 - 2(X_n - E_{n - 1})(\frac{X_n - E_{n - 1}}{n})] \\
+            & \quad \quad \quad \quad \quad \quad \quad \quad + \frac{1}{n}\sum_{i = 1}^{n - 1}[(X_i - E_{n - 1})^2 - 2(X_i - E_{n - 1})(\frac{X_n - E_{n - 1}}{n})] \\
+            &= \frac{n - 1}{n^2}(X_n - E_{n - 1})^2 + \frac{1}{n}\sum_{i = 1}^{n - 1}(X_i - E_{n - 1})^2 - 2(\frac{X_n - E_{n - 1}}{n})\sum_{i = 1}^{n - 1}(X_i - E_{n - 1}) \\
+            &= \frac{n - 1}{n^2}(X_n - E_{n - 1})^2 + \frac{n - 1}{n}\frac{1}{n - 1}\sum_{i = 1}^{n - 1}(X_i - E_{n - 1})^2) \\
+            &= \frac{n - 1}{n^2}(X_n - D_{n - 1})^2 + \frac{n - 1}{n}D_{n - 1}
+            \tag{ps.2}
+        \end{aligned}
+    $$
 
 **实验结果：**
 
@@ -230,4 +281,4 @@ $$
 ## 参考文献
 
 1. **[[Monte Carlo method | Wikipedia](https://en.wikipedia.org/wiki/Monte_Carlo_method)]**
-2. **[[Expectation–maximization algorithm](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)]**
+2. **[[Expectation–maximization algorithm | Wikipedia](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)]**
